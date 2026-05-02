@@ -1,0 +1,63 @@
+<div class="border border-green-800 bg-[#050a14] p-4 rounded shadow">
+
+  <div class="flex justify-between items-center">
+
+    <!-- LEFT -->
+    <div>
+      <div class="text-lg text-green-200">
+        {{ event.flightId }} | {{ event.eventType }}
+      </div>
+
+      <div class="text-sm text-gray-400">
+        ALT {{ event.altitude }} ft | HDG {{ event.heading }}
+      </div>
+
+      <div class="text-sm text-gray-500">
+        {{ event.location }}
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="text-right">
+
+      <div
+        [ngClass]="{
+          'bg-green-600': event.severity === 'LOW',
+          'bg-yellow-500 text-black': event.severity === 'MEDIUM',
+          'bg-orange-600': event.severity === 'HIGH',
+          'bg-red-700': event.severity === 'CRITICAL'
+        }"
+        class="px-2 py-1 rounded text-xs mb-1">
+        {{ event.severity }}
+      </div>
+
+      <div class="text-sm">
+        {{ event.status }}
+      </div>
+
+      <div class="text-xs text-gray-500">
+        {{ event.timestamp | date:'short' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="mt-3 flex gap-2">
+
+    <button
+      *ngIf="event.status === 'ACTIVE'"
+      (click)="onAck()"
+      class="bg-yellow-500 text-black px-3 py-1 rounded hover:bg-yellow-400">
+      ACK
+    </button>
+
+    <button
+      *ngIf="event.status !== 'RESOLVED'"
+      (click)="onResolve()"
+      class="bg-red-600 px-3 py-1 rounded hover:bg-red-500">
+      RESOLVE
+    </button>
+
+  </div>
+
+</div>

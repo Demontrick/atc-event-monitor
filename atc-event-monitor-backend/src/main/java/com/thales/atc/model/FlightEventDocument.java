@@ -7,10 +7,11 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 
 @Document(collection = "flight_events")
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class FlightEventDocument {
 
     @Id

@@ -1,3 +1,17 @@
 spring:
   application:
     name: atc-event-monitor-backend
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/atcdb
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      group-id: atc-group
+      auto-offset-reset: earliest
+
+server:
+  port: 8080

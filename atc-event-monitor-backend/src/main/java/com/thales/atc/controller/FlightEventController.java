@@ -1,6 +1,7 @@
 package com.thales.atc.controller;
 
 import com.thales.atc.model.*;
+import com.thales.atc.producer.FlightEventProducer;
 import com.thales.atc.service.FlightEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import java.util.List;
 public class FlightEventController {
 
     private final FlightEventService service;
+    private final FlightEventProducer flightEventProducer;
 
     // GET ALL EVENTS
     @GetMapping
@@ -40,9 +42,16 @@ public class FlightEventController {
         return service.updateStatus(id, status);
     }
 
-    // SIMPLE STATS ENDPOINT (for dashboard later)
+    // DASHBOARD STATS
     @GetMapping("/stats/{severity}")
     public long countBySeverity(@PathVariable Severity severity) {
         return service.countBySeverity(severity);
+    }
+
+    // TEST EVENT PUSH TO KAFKA (ATC SIMULATION)
+    @PostMapping("/publish/test")
+    public String publishTestEvent() {
+        flightEventProducer.publishRandomEvent();
+        return "ATC EVENT SENT TO KAFKA";
     }
 }
