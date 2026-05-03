@@ -1,0 +1,91 @@
+.card {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px;
+  border-radius: 10px;
+
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+
+  transition: 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(96,165,250,0.4);
+}
+
+/* LEFT SIDE */
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* RIGHT SIDE */
+.right {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* SEVERITY BADGES */
+.sev {
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.sev.low {
+  color: #22c55e;
+}
+
+.sev.medium {
+  color: #fbbf24;
+}
+
+.sev.high {
+  color: #f97316;
+}
+
+.sev.critical {
+  color: #ef4444;
+  animation: pulse 1.2s infinite;
+}
+
+/* ACTION BUTTONS */
+.actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+button {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+  color: burns white;
+}
+
+.ack {
+  background: #2563eb;
+}
+
+.res {
+  background: #16a34a;
+}
+
+.ack:hover { opacity: 0.85; }
+.res:hover { opacity: 0.85; }
+
+/* CRITICAL PULSE */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

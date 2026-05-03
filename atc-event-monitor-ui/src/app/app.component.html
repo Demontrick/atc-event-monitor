@@ -1,62 +1,88 @@
-<div class="min-h-screen bg-[#0a0f1c] text-green-300 p-6 font-mono">
+<div class="dashboard">
 
-  <!-- HEADER -->
-  <h1 class="text-3xl mb-6 text-green-400 tracking-widest">
-    ✈️ ATC EVENT MONITOR
-  </h1>
+  <!-- HEADER (same surface system as cards) -->
+  <div class="surface header">
+    ✈ ATC EVENT MONITOR
+  </div>
 
   <!-- FILTER BAR -->
-  <div class="mb-6 flex gap-2 flex-wrap">
-    <button (click)="setSeverityFilter('ALL')" class="px-3 py-1 border border-gray-500 rounded hover:bg-gray-700">ALL</button>
-    <button (click)="setSeverityFilter('LOW')" class="px-3 py-1 bg-green-700 rounded">LOW</button>
-    <button (click)="setSeverityFilter('MEDIUM')" class="px-3 py-1 bg-yellow-600 text-black rounded">MEDIUM</button>
-    <button (click)="setSeverityFilter('HIGH')" class="px-3 py-1 bg-orange-600 rounded">HIGH</button>
-    <button (click)="setSeverityFilter('CRITICAL')" class="px-3 py-1 bg-red-700 rounded">CRITICAL</button>
-  </div>
+  <div class="surface status-bar">
 
-  <!-- STATS -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-center">
+    <div class="filter-btn"
+         [class.active]="selectedSeverity==='ALL'"
+         (click)="setSeverityFilter('ALL')">ALL</div>
 
-    <div class="bg-green-900 p-3 rounded">
-      LOW
-      <div class="text-xl">{{ count('LOW') }}</div>
-    </div>
+    <div class="filter-btn"
+         [class.active]="selectedSeverity==='LOW'"
+         (click)="setSeverityFilter('LOW')">LOW</div>
 
-    <div class="bg-yellow-700 p-3 rounded text-black">
-      MEDIUM
-      <div class="text-xl">{{ count('MEDIUM') }}</div>
-    </div>
+    <div class="filter-btn"
+         [class.active]="selectedSeverity==='MEDIUM'"
+         (click)="setSeverityFilter('MEDIUM')">MEDIUM</div>
 
-    <div class="bg-orange-700 p-3 rounded">
-      HIGH
-      <div class="text-xl">{{ count('HIGH') }}</div>
-    </div>
+    <div class="filter-btn"
+         [class.active]="selectedSeverity==='HIGH'"
+         (click)="setSeverityFilter('HIGH')">HIGH</div>
 
-    <div class="bg-red-800 p-3 rounded">
-      CRITICAL
-      <div class="text-xl">{{ count('CRITICAL') }}</div>
-    </div>
+    <div class="filter-btn"
+         [class.active]="selectedSeverity==='CRITICAL'"
+         (click)="setSeverityFilter('CRITICAL')">CRITICAL</div>
 
   </div>
 
-  <!-- LOADING -->
-  <div *ngIf="loading" class="text-gray-400 mb-4">
-    Establishing ATC data link...
-  </div>
+  <!-- MAIN GRID (IMPORTANT: SAME WIDTH SYSTEM AS CARDS) -->
+  <div class="main-layout">
 
-  <!-- ERROR -->
-  <div *ngIf="error" class="text-red-500 mb-4">
-    {{ error }}
-  </div>
+    <!-- STATS PANEL -->
+    <div class="surface stats">
 
-  <!-- EVENTS -->
-  <div class="space-y-3">
-    <app-event-card
-      *ngFor="let event of filteredEvents"
-      [event]="event"
-      (ack)="acknowledge($event)"
-      (resolve)="resolve($event)">
-    </app-event-card>
+      <div class="stat-box stat-low">
+        <div class="label">LOW</div>
+        <div class="value">{{ count('LOW') }}</div>
+      </div>
+
+      <div class="stat-box stat-med">
+        <div class="label">MEDIUM</div>
+        <div class="value">{{ count('MEDIUM') }}</div>
+      </div>
+
+      <div class="stat-box stat-high">
+        <div class="label">HIGH</div>
+        <div class="value">{{ count('HIGH') }}</div>
+      </div>
+
+      <div class="stat-box stat-critical">
+        <div class="label">CRITICAL</div>
+        <div class="value">{{ count('CRITICAL') }}</div>
+      </div>
+
+    </div>
+
+    <!-- FEED PANEL -->
+    <div class="surface feed">
+
+      <div *ngIf="loading" class="loading">
+        Connecting to ATC data link...
+      </div>
+
+      <div *ngIf="error" class="error">
+        {{ error }}
+      </div>
+
+      <div *ngIf="!loading && !error && filteredEvents.length === 0"
+           class="empty">
+        No flight events detected
+      </div>
+
+      <app-event-card
+        *ngFor="let event of filteredEvents; trackBy: trackByEventId"
+        [event]="event"
+        (acknowledge)="acknowledge($event)"
+        (resolve)="resolve($event)">
+      </app-event-card>
+
+    </div>
+
   </div>
 
 </div>

@@ -1,62 +1,53 @@
-<div class="border border-green-800 bg-[#050a14] p-4 rounded shadow">
+<div class="bg-[#111827] border border-gray-700 rounded-lg p-4 mb-3 flex justify-between">
 
-  <div class="flex justify-between items-center">
-
-    <!-- LEFT -->
-    <div>
-      <div class="text-lg text-green-200">
-        {{ event.flightId }} | {{ event.eventType }}
-      </div>
-
-      <div class="text-sm text-gray-400">
-        ALT {{ event.altitude }} ft | HDG {{ event.heading }}
-      </div>
-
-      <div class="text-sm text-gray-500">
-        {{ event.location }}
-      </div>
+  <!-- LEFT -->
+  <div>
+    <div class="text-green-200 font-semibold">
+      {{ event.flightId }} | {{ event.eventType }}
     </div>
 
-    <!-- RIGHT -->
-    <div class="text-right">
+    <div class="text-sm text-gray-400">
+      ALT {{ event.altitude }} ft | HDG {{ event.heading }}
+    </div>
 
-      <div
-        [ngClass]="{
-          'bg-green-600': event.severity === 'LOW',
-          'bg-yellow-500 text-black': event.severity === 'MEDIUM',
-          'bg-orange-600': event.severity === 'HIGH',
-          'bg-red-700': event.severity === 'CRITICAL'
-        }"
-        class="px-2 py-1 rounded text-xs mb-1">
-        {{ event.severity }}
-      </div>
-
-      <div class="text-sm">
-        {{ event.status }}
-      </div>
-
-      <div class="text-xs text-gray-500">
-        {{ event.timestamp | date:'short' }}
-      </div>
+    <div class="text-xs text-gray-500">
+      {{ event.location }}
     </div>
   </div>
 
-  <!-- ACTIONS -->
-  <div class="mt-3 flex gap-2">
+  <!-- RIGHT -->
+  <div class="text-right">
 
-    <button
-      *ngIf="event.status === 'ACTIVE'"
-      (click)="onAck()"
-      class="bg-yellow-500 text-black px-3 py-1 rounded hover:bg-yellow-400">
-      ACK
-    </button>
+    <div
+      class="px-2 py-1 rounded text-xs"
+      [ngClass]="{
+        'bg-green-600': event.severity === 'LOW',
+        'bg-yellow-500 text-black': event.severity === 'MEDIUM',
+        'bg-orange-600': event.severity === 'HIGH',
+        'bg-red-600': event.severity === 'CRITICAL'
+      }">
+      {{ event.severity }}
+    </div>
 
-    <button
-      *ngIf="event.status !== 'RESOLVED'"
-      (click)="onResolve()"
-      class="bg-red-600 px-3 py-1 rounded hover:bg-red-500">
-      RESOLVE
-    </button>
+    <div class="text-xs text-gray-400 mt-1">
+      {{ event.status }}
+    </div>
+
+    <div class="flex gap-2 mt-2 justify-end">
+
+      <button
+        class="px-2 py-1 bg-yellow-500 text-black rounded text-xs"
+        (click)="onAck()">
+        ACK
+      </button>
+
+      <button
+        class="px-2 py-1 bg-red-600 text-white rounded text-xs"
+        (click)="onResolve()">
+        RES
+      </button>
+
+    </div>
 
   </div>
 

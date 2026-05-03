@@ -7,16 +7,17 @@ import { FlightEvent } from '../../core/services/flight-event.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './event-card.component.html',
+  styleUrls: ['./event-card.component.css']
 })
 export class EventCardComponent {
 
   @Input() event!: FlightEvent;
 
-  @Output() ack = new EventEmitter<string>();
+  @Output() acknowledge = new EventEmitter<string>();
   @Output() resolve = new EventEmitter<string>();
 
   onAck() {
-    this.ack.emit(this.event.id);
+    this.acknowledge.emit(this.event.id);
   }
 
   onResolve() {

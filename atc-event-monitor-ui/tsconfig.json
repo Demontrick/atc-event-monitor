@@ -23,12 +23,21 @@
     "module": "ES2022",
 
     "lib": ["ES2022", "DOM"],
-    "useDefineForClassFields": false
+
+    "useDefineForClassFields": false,
+
+    "types": ["node"]
   },
+
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+
+  "exclude": [
+    "vitest.config.ts",
+    "**/*.spec.ts"
+  ]
 }

@@ -35,4 +35,7 @@ export class FlightEventService {
       `${this.baseUrl}/${id}/status?status=${status}`, {}
     );
   }
+  getStats() {
+  return this.http.get<any>(this.baseUrl + '/stats');
+}
 }
