@@ -4,14 +4,24 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/atcdb
+      uri: ${MONGO_URI:mongodb://mongo:27017/atcdb}
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
 
     consumer:
       group-id: atc-group
       auto-offset-reset: earliest
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+  endpoint:
+    health:
+      show-details: always
 
 server:
   port: 8080

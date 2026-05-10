@@ -1,5 +1,6 @@
 package com.thales.atc.producer;
 
+import com.thales.atc.config.KafkaConfig;
 import com.thales.atc.model.EventType;
 import com.thales.atc.model.FlightEvent;
 import com.thales.atc.model.Severity;
@@ -14,7 +15,8 @@ import java.util.UUID;
 @Service
 public class FlightEventProducer {
 
-    private static final String TOPIC = "flight-events";
+    // ✅ FIXED: must match consumer topic exactly
+    private static final String TOPIC = KafkaConfig.TOPIC;
 
     private final KafkaTemplate<String, FlightEvent> kafkaTemplate;
     private final Random random = new Random();
@@ -52,6 +54,7 @@ public class FlightEventProducer {
         event.setTimestamp(Instant.now());
         event.setLocation(airspaces.get(random.nextInt(airspaces.size())));
 
+        // key = flightId ensures partition ordering per flight
         kafkaTemplate.send(TOPIC, event.getFlightId(), event);
     }
 }
