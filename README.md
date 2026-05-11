@@ -1,103 +1,91 @@
-# atc-event-monitor
+# ATC Event Monitor
 
-A real-time flight event monitoring system built to demonstrate 
-backend engineering capability for Thales's Air Mobility 
-Solutions (AMS) team in Portugal.
-
-Thales ATC systems process safety-critical flight events across 
-international airspace — collision risks, airspace breaches, 
-runway conflicts, emergencies — where every event must be 
-captured, streamed, persisted, and actioned with zero tolerance 
-for loss or delay. This system replicates that pipeline at a 
-demonstrable scale.
+Real-time flight event monitoring system built on Kafka, Spring Boot, and Angular — modelled on the event pipeline architecture used in Air Traffic Control and distributed safety-critical monitoring systems.
 
 ---
 
-## 🧠 Why This Project Exists
+## System overview
 
-Modern air traffic control systems process thousands of 
-real-time signals per second across distributed infrastructure. 
-This PoC simulates a lightweight event-driven monitoring system 
-demonstrating:
+Air traffic control environments process continuous streams of flight events across distributed infrastructure — collision risks, airspace breaches, runway conflicts, and declared emergencies — where reliable ingestion, persistence, and operator visibility are non-negotiable.
 
-- Real-time event ingestion via Kafka
-- Stream processing and persistent storage via MongoDB
-- Backend aggregation exposed through a clean REST API
-- Live operator dashboard with ACK / RESOLVE workflow
-- Distributed system thinking applied to a safety-critical domain
-
-This mirrors how real ATC and defense monitoring systems are 
-architected at a production-representative level.
+This project implements an event-driven monitoring pipeline applying those architectural patterns: Kafka-based event ingestion, Spring Boot stream processing, MongoDB persistence, a secured REST API layer, and a live Angular operator dashboard with ACK/RESOLVE workflow.
 
 ---
 
-## 🏗 System Architecture
+## Architecture
 
+```
 Kafka Producer
-↓
+    ↓
 Kafka Topic (flight-events)
-↓
-Spring Boot Consumer
-↓
+    ↓
+Spring Boot Consumer (flight-events-consumer-group)
+    ↓
 MongoDB (Event Store)
-↓
-REST API Layer
-↓
-Angular Frontend (Live Polling Dashboard)
+    ↓
+REST API Layer (Spring Boot)
+    ↓
+Angular Dashboard (Live Operator UI)
+```
 
 ---
 
-## ⚙️ Tech Stack
+## Tech stack
 
 | Layer | Technology |
 |---|---|
-| Backend | Spring Boot 3, Java 21 |
-| Streaming | Apache Kafka |
+| Backend | Java 21, Spring Boot 3, Spring Security, Spring Data MongoDB |
+| Messaging | Apache Kafka, Zookeeper |
 | Database | MongoDB |
 | Frontend | Angular 19, TypeScript |
-| Infrastructure | Docker Compose, Zookeeper |
+| Infrastructure | Docker Compose, Kubernetes (Deployment, Service, ConfigMap) |
+| Observability | Spring Boot Actuator (`/health`, `/info`), SLF4J + MDC correlation IDs, JSON structured logs |
 
 ---
 
-## 📡 Flight Event Types
+## Security
 
-| Event | ATC Context |
+Role-based access control implemented with Spring Security. Endpoint-level authorization enforced at the controller layer.
+
+| Role | Permissions |
 |---|---|
-| EMERGENCY_DECLARED | Aircraft declared emergency — immediate escalation |
-| COLLISION_RISK | Proximity alert between two aircraft |
-| AIRSPACE_BREACH | Aircraft entered restricted airspace |
-| FLIGHT_DELAYED | Departure or arrival delay logged |
-| RUNWAY_CONFLICT | Simultaneous runway access detected |
+| `OPERATOR` | Read events, update event status |
+| `SUPERVISOR` | Full access including event publishing |
+
+In-memory user store for local development. Designed for LDAP or OAuth2 provider integration in a production deployment.
+
+**Example credentials**
+
+```
+operator / operator123
+supervisor / supervisor123
+```
 
 ---
 
-## ⚖️ Severity Levels
+## REST API
 
-| Level | Operator Response |
-|---|---|
-| LOW | Informational — monitor only |
-| MEDIUM | Review within current shift |
-| HIGH | Immediate operator attention required |
-| CRITICAL | Escalate to supervisor now |
+RESTful API built with Spring Boot, secured with Spring Security, and consumed by the Angular operator dashboard.
 
----
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| `GET` | `/api/flights/events` | OPERATOR | Paginated event feed |
+| `GET` | `/api/flights/events?severity=CRITICAL` | OPERATOR | Filtered by severity or type |
+| `PATCH` | `/api/flights/events/{id}/status` | OPERATOR | Update event status |
+| `POST` | `/api/flights/events/publish` | SUPERVISOR | Publish a test event |
+| `GET` | `/api/flights/events/stats` | OPERATOR | Counts by severity and type |
+| `GET` | `/actuator/health` | Secured | Service and Kafka consumer health |
 
-## 🔌 API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | /api/flights/events | Paginated event feed |
-| GET | /api/flights/events?severity=CRITICAL | Filtered events |
-| PATCH | /api/flights/events/{id}/status | Update event status |
-| POST | /api/flights/events/publish | Publish test event |
-| GET | /api/flights/events/stats | Counts by severity and type |
+**Example requests**
 
 ```bash
-# Get all CRITICAL events
-curl http://localhost:8080/api/flights/events?severity=CRITICAL
+# Retrieve all CRITICAL events
+curl -u operator:operator123 \
+  http://localhost:8080/api/flights/events?severity=CRITICAL
 
 # Acknowledge an event
-curl -X PATCH \
+curl -u operator:operator123 \
+  -X PATCH \
   -H "Content-Type: application/json" \
   -d '{"status": "ACKNOWLEDGED"}' \
   http://localhost:8080/api/flights/events/abc123/status
@@ -105,107 +93,65 @@ curl -X PATCH \
 
 ---
 
-## 🚀 Core Features
+## Flight event types
 
-### ✈ Real-Time Event Stream
-- Simulated flight events across real flight identifiers 
-  (EK505, BA202, etc.)
-- Kafka producer continuously publishes events covering 
-  all event types and severity levels
-- Consumer persists every event to MongoDB with no loss
-
-### 📊 Live Operator Dashboard
-- Auto-refreshing event feed via RxJS polling
-- Severity filter: ALL / LOW / MEDIUM / HIGH / CRITICAL
-- Event type filter: ALL / COLLISION_RISK / 
-  AIRSPACE_BREACH / etc.
-- Event cards: flightId, aircraftType, severity badge, 
-  type badge, timestamp, current status
-- ACK and RESOLVE actions per event
-
-### 📡 Live Stats Engine
-- Aggregated severity counts derived from event stream
-- Frontend-side consistency model — stats stay in sync 
-  with event feed without additional API calls
+| Event | Severity range | ATC context |
+|---|---|---|
+| `EMERGENCY_DECLARED` | CRITICAL | Aircraft declared emergency — immediate escalation |
+| `COLLISION_RISK` | HIGH / CRITICAL | Proximity alert between two aircraft |
+| `AIRSPACE_BREACH` | MEDIUM / HIGH | Aircraft entered restricted airspace |
+| `RUNWAY_CONFLICT` | HIGH / CRITICAL | Simultaneous runway access detected |
+| `FLIGHT_DELAYED` | LOW / MEDIUM | Departure or arrival delay logged |
 
 ---
 
-## 💡 Key Design Decisions
+## Key implementation details
 
-### 1. Event-Driven Architecture
-Kafka simulates real-world aviation telemetry streams — 
-producer and consumer are decoupled, allowing either side 
-to scale independently.
+**Event-driven pipeline**
+Kafka producer publishes typed flight events to the `flight-events` topic. Spring Boot consumer group (`flight-events-consumer-group`) processes and persists events to MongoDB. A deduplication layer handles repeated Kafka emissions (at-least-once delivery) safely.
 
-### 2. Stateless Frontend
-Angular derives all state from backend polling — no 
-permanent client-side state that can drift from the 
-source of truth.
+**Spring Security RBAC**
+Endpoint-level authorization enforced at the controller layer. `OPERATOR` role scoped to read and status-update operations. `SUPERVISOR` role required for event publishing. Actuator endpoints secured independently.
 
-### 3. Derived Stats Model
-Stats are computed from the live event stream rather than 
-a separate aggregation endpoint — ensures consistency 
-between feed and counters at all times.
+**Observability**
+Spring Boot Actuator exposes `/actuator/health` (including Kafka consumer connectivity) and `/actuator/info`. Per-request correlation IDs (MDC) propagated across the Kafka consumer and REST layers for end-to-end log tracing. Logs emitted in JSON format for compatibility with standard log aggregation platforms.
 
-### 4. Deduplication Layer
-Frontend includes deduplication logic to handle repeated 
-Kafka emissions safely — critical in high-frequency 
-event environments.
+**Angular operator dashboard**
+Angular 19 standalone components with TypeScript. Live event feed with severity and type filtering. ACK / RESOLVE workflow per event. Stateless frontend derives state from polling to prevent client-side drift.
+
+**Kubernetes manifests**
+`Deployment` and `Service` resources for the Spring Boot backend. `ConfigMap` for Kafka broker and MongoDB configuration. Liveness probe configured against `/actuator/health`.
 
 ---
 
-## ⚠️ Known Limitations (PoC Scope)
-
-- No authentication layer (planned: JWT + role-based access)
-- Polling used instead of WebSockets (planned: STOMP)
-- No persistent event replay system
-- Kafka simplified for simulation — single broker, 
-  no replication
-
----
-
-## 🐳 Run with Docker
+## Running locally
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
-Spins up:
-- Zookeeper
-- Kafka (port 9092)
-- MongoDB (port 27017)
-- Spring Boot Backend (port 8080)
-- Angular Frontend (port 4200)
+Starts: Zookeeper, Kafka (port 9092), MongoDB (port 27017), Spring Boot backend (port 8080), Angular frontend (port 4200).
 
-### Run individually:
-
-```bash
-# Backend
-mvn spring-boot:run
-
-# Frontend
-npm install
-ng serve
-```
+Environment configuration managed via Spring profiles:
+- `application-dev.properties` — local Kafka and MongoDB endpoints
+- `application-prod.properties` — environment variable overrides for broker URLs and database connections
 
 ---
 
-## 🔥 What This Project Demonstrates
+## Project structure
 
-- Event-driven system design in a safety-critical domain
-- Real-time Kafka-based data pipelines
-- Frontend-backend synchronization at scale
-- Distributed system thinking applied to ATC architecture
-- Production-style Angular 19 standalone components
-- Clean REST API design with MongoDB persistence
-
----
-
-## 🚀 Future Improvements
-
-- Replace polling with WebSockets (STOMP)
-- Add JWT authentication with ATC_OPERATOR / 
-  SUPERVISOR roles
-- Add event replay and history view
-- Add Grafana monitoring for Kafka streams
-- Deploy via Kubernetes
+```
+atc-event-monitor/
+├── backend/                   # Spring Boot 3 application
+│   ├── consumer/              # Kafka consumer + deduplication
+│   ├── controller/            # REST API controllers
+│   ├── security/              # Spring Security configuration
+│   ├── model/                 # FlightEvent domain model
+│   └── repository/            # Spring Data MongoDB repositories
+├── frontend/                  # Angular 19 operator dashboard
+├── k8s/                       # Kubernetes manifests
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+└── docker-compose.yml
+```
